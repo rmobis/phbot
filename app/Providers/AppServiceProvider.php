@@ -2,7 +2,11 @@
 
 namespace App\Providers;
 
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -12,7 +16,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        if (App::isLocal()) {
+            FilamentView::registerRenderHook(
+                PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
+                static fn (PanelsRenderHook $panelsRenderHook) => Blade::render('<x-login-link />')
+            );
+        }
     }
 
     /**
