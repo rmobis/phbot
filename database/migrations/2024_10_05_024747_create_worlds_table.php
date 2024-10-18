@@ -12,10 +12,11 @@ return new class extends Migration
     {
         Schema::create('worlds', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 64);
+            $table->string('name', 64)->unique();
             $table->enum('region', Region::values());
-            $table->enum('world_type', WorldType::values());
+            $table->enum('type', WorldType::values());
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

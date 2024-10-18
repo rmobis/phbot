@@ -8,7 +8,8 @@ enum Region: string
 {
     use ArrayableEnum;
 
-    case Europe = 'EU';
-    case NorthAmerica = 'NA';
-    case SouthAmerica = 'SA';
+    case Europe = 'Europe';
+    case NorthAmerica = 'North America';
+    case SouthAmerica = 'South America';
+    case Oceania = 'Oceania';
 }

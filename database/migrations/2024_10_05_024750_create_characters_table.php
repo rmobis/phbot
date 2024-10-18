@@ -13,12 +13,12 @@ return new class extends Migration
 
         Schema::create('characters', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 128);
+            $table->string('name', 128)->unique();
             $table->integer('level');
             $table->enum('vocation', Vocation::values());
             $table->foreignId('world_id')->constrained();
-            $table->foreignId('guild_id')->nullable()->constrained();
-            $table->foreignId('member_id')->nullable()->constrained();
+            $table->foreignId('guild_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('guild_rank', 128)->nullable();
             $table->timestamps();
         });
 

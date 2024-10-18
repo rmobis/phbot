@@ -8,13 +8,13 @@ enum Vocation: string
 {
     use ArrayableEnum;
 
-    case None = 'N';
-    case Druid = 'D';
-    case Sorcerer = 'S';
-    case Paladin = 'P';
-    case Knight = 'K';
-    case ElderDruid = 'ED';
-    case MasterSorcerer = 'MS';
-    case RoyalPaladin = 'RP';
-    case EliteKnight = 'EK';
+    case None = 'None';
+    case Druid = 'Druid';
+    case Sorcerer = 'Sorcerer';
+    case Paladin = 'Paladin';
+    case Knight = 'Knight';
+    case ElderDruid = 'Elder Druid';
+    case MasterSorcerer = 'Master Sorcerer';
+    case RoyalPaladin = 'Royal Paladin';
+    case EliteKnight = 'Elite Knight';
 }

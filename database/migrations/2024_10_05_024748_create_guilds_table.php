@@ -12,7 +12,9 @@ return new class extends Migration
 
         Schema::create('guilds', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 128);
+            $table->string('name', 128)->unique();
+            $table->text('description');
+            $table->string('logo', 128);
             $table->foreignId('world_id')->constrained();
             $table->timestamps();
         });

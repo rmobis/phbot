@@ -21,9 +21,4 @@ class Character extends Model
     {
         return $this->belongsTo(Guild::class);
     }
-
-    public function member(): BelongsTo
-    {
-        return $this->belongsTo(Member::class);
-    }
 }

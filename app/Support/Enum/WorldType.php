@@ -8,9 +8,9 @@ enum WorldType: string
 {
     use ArrayableEnum;
 
-    case OptionalPvP = 'optional';
-    case OpenPvP = 'open';
-    case HardcorePvP = 'hardcore';
-    case RetroOpenPvP = 'retro-open';
-    case RetroHardcorePvP = 'retro-hardcore';
+    case OptionalPvP = 'Optional PvP';
+    case OpenPvP = 'Open PvP';
+    case HardcorePvP = 'Hardcore PvP';
+    case RetroOpenPvP = 'Retro Open PvP';
+    case RetroHardcorePvP = 'Retro Hardcore PvP';
 }
