@@ -8,6 +8,10 @@ use App\Models\World;
 use App\Support\Enum\Region;
 use App\Support\Enum\Vocation;
 use App\Support\Enum\WorldType;
+use App\Tibia\Data\Guild\MemberData;
+use App\Tibia\Data\Guilds\GuildData;
+use App\Tibia\Data\Worlds\WorldData;
+use App\Tibia\TibiaDataApi\Resources\CharacterResource;
 use App\Tibia\TibiaDataApi\Resources\GuildResource;
 use App\Tibia\TibiaDataApi\Resources\WorldResource;
 use Illuminate\Http\Client\ConnectionException;
@@ -18,6 +22,7 @@ class TibiaService
     public function __construct(
         protected WorldResource $worldResource,
         protected GuildResource $guildResource,
+        protected CharacterResource $characterResource,
     ) {}
 
     /**
@@ -26,16 +31,17 @@ class TibiaService
      */
     public function importWorlds(): void
     {
-        $apiWorlds = $this->worldResource->all()
-            ->keyBy('name');
+        $response = $this->worldResource->all();
+        $apiWorlds = $response->worlds->regularWorlds;
 
+        /** @var WorldData $apiWorld */
         foreach ($apiWorlds as $apiWorld) {
             World::updateOrCreate(
                 ['name' => $apiWorld->name],
                 [
                     'region' => Region::from($apiWorld->location),
-                    'type' => WorldType::from($apiWorld->pvp_type),
-                ]
+                    'type' => WorldType::from($apiWorld->pvpType),
+                ],
             );
         }
     }
@@ -44,19 +50,20 @@ class TibiaService
      * @throws RequestException
      * @throws ConnectionException
      */
-    public function importGuilds(World $world): void
+    public function importGuildsFromWorld(World $world): void
     {
-        $apiGuilds = $this->guildResource->activeInWorld($world->name)
-            ->keyBy('name');
+        $response = $this->guildResource->fromWorld($world->name);
+        $apiGuilds = $response->guilds->active;
 
+        /** @var GuildData $apiGuild */
         foreach ($apiGuilds as $apiGuild) {
             Guild::updateOrCreate(
                 ['name' => $apiGuild->name],
                 [
                     'description' => $apiGuild->description,
-                    'logo' => $apiGuild->logo_url,
+                    'logo' => $apiGuild->logoUrl,
                     'world_id' => $world->id,
-                ]
+                ],
             );
         }
     }
@@ -65,22 +72,73 @@ class TibiaService
      * @throws RequestException
      * @throws ConnectionException
      */
-    public function importGuildCharacters(Guild $guild): void
+    public function importCharactersFromGuild(Guild $guild): void
     {
-        $apiGuild = $this->guildResource->get($guild->name);
-        $apiGuildCharacters = $apiGuild->members;
+        $response = $this->guildResource->get($guild->name);
+        $apiMembers = $response->guild->members;
 
-        foreach ($apiGuildCharacters as $apiGuildCharacter) {
-            Character::updateOrCreate(
-                ['name' => $apiGuildCharacter->name],
-                [
-                    'level' => $apiGuildCharacter->level,
-                    'vocation' => Vocation::from($apiGuildCharacter->vocation),
-                    'world_id' => $guild->world_id,
-                    'guild_id' => $guild->id,
-                    'guild_rank' => $apiGuildCharacter->rank,
-                ]
-            );
+        /** @var MemberData $apiMember */
+        foreach ($apiMembers as $apiMember) {
+            echo "Importing $apiMember->name".PHP_EOL;
+            $this->importCharacter($apiMember->name);
         }
+    }
+
+    /**
+     * @throws RequestException
+     * @throws ConnectionException
+     */
+    public function importCharacter(string $name): void
+    {
+        $response = $this->characterResource->get($name);
+        $apiCharacter = $response->character->character;
+
+        $possibleNames = [
+            $apiCharacter->name,
+            ...$apiCharacter->formerNames,
+        ];
+
+        $worldId = $this->getWorldId($apiCharacter->world);
+        $guildId = $this->getGuildId($apiCharacter->guild?->name);
+
+        $existingCharacter = Character::whereAnyName($possibleNames)->first();
+        $attributes = [
+            'name' => $apiCharacter->name,
+            'level' => $apiCharacter->level,
+            'vocation' => Vocation::from($apiCharacter->vocation),
+            'world_id' => $worldId,
+            'guild_id' => $guildId,
+            'guild_rank' => $apiCharacter->guild?->rank,
+        ];
+
+        if ($existingCharacter instanceof Character) {
+            $existingCharacter
+                ->updateTimestamps()
+                ->update($attributes);
+
+            return;
+        }
+
+        Character::create($attributes);
+    }
+
+    protected function getWorldId(string $name): int
+    {
+        $world = World::whereName($name)
+            ->firstOrFail();
+
+        return $world->id;
+    }
+
+    protected function getGuildId(?string $name): ?int
+    {
+        if (! is_string($name)) {
+            return null;
+        }
+
+        $guild = Guild::whereName($name)
+            ->firstOrFail();
+
+        return $guild->id;
     }
 }

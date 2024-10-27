@@ -2,10 +2,10 @@
 
 namespace App\Tibia\TibiaDataApi\Resources;
 
+use App\Tibia\TibiaDataApi\Responses\GuildResponse;
+use App\Tibia\TibiaDataApi\Responses\GuildsResponse;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
-use Illuminate\Support\Collection;
-use stdClass;
 
 class GuildResource extends AbstractResource
 {
@@ -13,26 +13,21 @@ class GuildResource extends AbstractResource
      * @throws RequestException
      * @throws ConnectionException
      */
-    public function get(string $guild): stdClass
+    public function get(string $guild): GuildResponse
     {
-        return $this->request("/guild/$guild")
-            ->object()
-            ->guild;
+        $response = $this->request("/guild/$guild");
+
+        return new GuildResponse($response);
     }
 
     /**
-     * @return Collection<stdClass>
-     *
-     * @throws RequestException
      * @throws ConnectionException
+     * @throws RequestException
      */
-    public function activeInWorld(string $world): Collection
+    public function fromWorld(string $world): GuildsResponse
     {
-        return collect(
-            $this->request("/guilds/$world")
-                ->object()
-                ->guilds
-                ->active
-        );
+        $response = $this->request("/guilds/$world");
+
+        return new GuildsResponse($response);
     }
 }
