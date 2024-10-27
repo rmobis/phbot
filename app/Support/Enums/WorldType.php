@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Support\Enum;
+namespace App\Support\Enums;
 
-use App\Support\Trait\ArrayableEnum;
+use App\Support\Traits\ArrayableEnum;
 
 enum WorldType: string
 {

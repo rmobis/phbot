@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Support\Enum\Vocation;
+use App\Support\Enums\Vocation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

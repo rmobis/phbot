@@ -1,7 +1,7 @@
 <?php
 
-use App\Support\Enum\Region;
-use App\Support\Enum\WorldType;
+use App\Support\Enums\Region;
+use App\Support\Enums\WorldType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
