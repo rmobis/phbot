@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use App\Observers\CharacterObserver;
 use App\Support\Enums\Vocation;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
+#[ObservedBy(CharacterObserver::class)]
 class Character extends Model
 {
     protected $casts = [
