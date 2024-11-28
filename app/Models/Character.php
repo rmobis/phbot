@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -26,6 +27,11 @@ class Character extends Model
     public function guild(): BelongsTo
     {
         return $this->belongsTo(Guild::class);
+    }
+
+    public function characterEvents(): HasMany
+    {
+        return $this->hasMany(CharacterEvent::class);
     }
 
     public function scopeWhereAnyName(Builder $query, iterable $names): void
