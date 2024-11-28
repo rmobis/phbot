@@ -4,7 +4,7 @@ namespace App\Tibia\Data\Information;
 
 use App\Tibia\Data\AbstractData;
 
-class Api extends AbstractData
+class ApiData extends AbstractData
 {
     public function __construct(
         public readonly int $version,

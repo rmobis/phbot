@@ -2,32 +2,26 @@
 
 namespace App\Tibia\Data;
 
-use App\Tibia\Data\Character\AccountBadgeData;
-use App\Tibia\Data\Character\AccountInformationData;
-use App\Tibia\Data\Character\AchievementData;
-use App\Tibia\Data\Character\CharacterData as InnerCharacterData;
-use App\Tibia\Data\Character\DeathData;
-use App\Tibia\Data\Character\OtherCharacterData;
 use Illuminate\Support\Collection;
 use Spatie\LaravelData\Attributes\Validation\Present;
 
 class CharacterData extends AbstractData
 {
     public function __construct(
-        public readonly InnerCharacterData $character,
+        public readonly Character\CharacterData $character,
         #[Present]
-        /** @var Collection<AccountBadgeData> */
+        /** @var Collection<Character\AccountBadgeData> */
         public readonly Collection $accountBadges,
         #[Present]
-        /** @var Collection<AchievementData> */
+        /** @var Collection<Character\AchievementData> */
         public readonly Collection $achievements,
         #[Present]
-        /** @var Collection<DeathData> */
+        /** @var Collection<Character\DeathData> */
         public readonly Collection $deaths,
         public readonly bool $deathsTruncated,
-        public readonly ?AccountInformationData $accountInformation,
+        public readonly ?Character\AccountInformationData $accountInformation,
         #[Present]
-        /** @var Collection<OtherCharacterData> */
+        /** @var Collection<Character\OtherCharacterData> */
         public readonly Collection $otherCharacters,
     ) {}
 }

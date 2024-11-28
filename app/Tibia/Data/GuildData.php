@@ -3,8 +3,6 @@
 namespace App\Tibia\Data;
 
 use App\Tibia\Data\Casts\OptionalDateTimeInterfaceCast;
-use App\Tibia\Data\Guild\InviteData;
-use App\Tibia\Data\Guild\MemberData;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Spatie\LaravelData\Attributes\Validation\Present;
@@ -36,10 +34,10 @@ class GuildData extends AbstractData
         public readonly int $playersOffline,
         public readonly int $membersTotal,
         public readonly int $membersInvited,
-        /** @var Collection<MemberData> */
+        /** @var Collection<Guild\MemberData> */
         public readonly Collection $members,
         #[Present]
-        /** @var Collection<InviteData> */
+        /** @var Collection<Guild\InviteData> */
         public readonly Collection $invites,
     ) {}
 }
