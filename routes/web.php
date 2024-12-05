@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Guild;
 use App\Models\World;
 use App\Tibia\TibiaService;
 use Illuminate\Support\Facades\Route;
@@ -11,6 +10,7 @@ Route::get('/test/{name}', function (
     string $name,
     TibiaService $tibiaService
 ) {
+    set_time_limit(3000);
     $tibiaService->importWorlds();
 
     $etebra = World::whereName('Etebra')->firstOrFail();

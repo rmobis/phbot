@@ -18,7 +18,6 @@ abstract class AbstractResource
         $client = Http::withUrlParameters([
             'baseUrl' => 'https://api.tibiadata.com',
             'version' => 'v4',
-            'url' => $url,
         ])->baseUrl('{+baseUrl}/{version}');
 
         $response = $client->get($url);

@@ -16,6 +16,7 @@ use App\Tibia\TibiaDataApi\Resources\GuildResource;
 use App\Tibia\TibiaDataApi\Resources\WorldResource;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Collection;
 
 class TibiaService
 {
@@ -26,69 +27,71 @@ class TibiaService
     ) {}
 
     /**
+     * @return Collection<World>
+     *
      * @throws RequestException
      * @throws ConnectionException
      */
-    public function importWorlds(): void
+    public function importWorlds(): Collection
     {
         $response = $this->worldResource->all();
         $apiWorlds = $response->worlds->regularWorlds;
 
-        /** @var WorldData $apiWorld */
-        foreach ($apiWorlds as $apiWorld) {
-            World::updateOrCreate(
+        return $apiWorlds->map(
+            static fn (WorldData $apiWorld) => World::updateOrCreate(
                 ['name' => $apiWorld->name],
                 [
                     'region' => Region::from($apiWorld->location),
                     'type' => WorldType::from($apiWorld->pvpType),
                 ],
-            );
-        }
+            )
+        );
     }
 
     /**
+     * @return Collection<Guild>
+     *
      * @throws RequestException
      * @throws ConnectionException
      */
-    public function importGuildsFromWorld(World $world): void
+    public function importGuildsFromWorld(World $world): Collection
     {
         $response = $this->guildResource->fromWorld($world->name);
         $apiGuilds = $response->guilds->active;
 
-        /** @var GuildData $apiGuild */
-        foreach ($apiGuilds as $apiGuild) {
-            Guild::updateOrCreate(
+        return $apiGuilds->map(
+            static fn (GuildData $apiGuild) => Guild::updateOrCreate(
                 ['name' => $apiGuild->name],
                 [
                     'description' => $apiGuild->description,
                     'logo' => $apiGuild->logoUrl,
                     'world_id' => $world->id,
                 ],
-            );
-        }
+            )
+        );
     }
 
     /**
+     * @return Collection<Character>
+     *
      * @throws RequestException
      * @throws ConnectionException
      */
-    public function importCharactersFromGuild(Guild $guild): void
+    public function importCharactersFromGuild(Guild $guild): Collection
     {
         $response = $this->guildResource->get($guild->name);
         $apiMembers = $response->guild->members;
 
-        /** @var MemberData $apiMember */
-        foreach ($apiMembers as $apiMember) {
-            echo "Importing $apiMember->name".PHP_EOL;
-            $this->importCharacter($apiMember->name);
-        }
+        return $apiMembers->map(
+            static fn (MemberData $apiMember) => $this->importCharacter($apiMember->name)
+        );
     }
 
     /**
      * @throws RequestException
      * @throws ConnectionException
      */
-    public function importCharacter(string $name): void
+    public function importCharacter(string $name): Character
     {
         $response = $this->characterResource->get($name);
         $apiCharacter = $response->character->character;
@@ -98,16 +101,16 @@ class TibiaService
             ...$apiCharacter->formerNames,
         ];
 
-        $worldId = $this->getWorldId($apiCharacter->world);
-        $guildId = $this->getGuildId($apiCharacter->guild?->name);
+        $world = $this->getWorld($apiCharacter->world);
+        $guild = $this->getGuild($world, $apiCharacter->guild?->name);
 
         $existingCharacter = Character::whereAnyName($possibleNames)->first();
         $attributes = [
             'name' => $apiCharacter->name,
             'level' => $apiCharacter->level,
             'vocation' => Vocation::from($apiCharacter->vocation),
-            'world_id' => $worldId,
-            'guild_id' => $guildId,
+            'world_id' => $world->id,
+            'guild_id' => $guild?->id,
             'guild_rank' => $apiCharacter->guild?->rank,
         ];
 
@@ -116,29 +119,47 @@ class TibiaService
                 ->updateTimestamps()
                 ->update($attributes);
 
-            return;
+            return $existingCharacter;
         }
 
-        Character::create($attributes);
+        return Character::create($attributes);
     }
 
-    protected function getWorldId(string $name): int
+    /**
+     * @throws RequestException
+     * @throws ConnectionException
+     */
+    protected function getWorld(string $name): World
     {
         $world = World::whereName($name)
-            ->firstOrFail();
+            ->first(['id', 'name']);
 
-        return $world->id;
+        if (! $world instanceof World) {
+            $worlds = $this->importWorlds();
+            $world = $worlds->firstWhere('name', $name);
+        }
+
+        return $world;
     }
 
-    protected function getGuildId(?string $name): ?int
+    /**
+     * @throws RequestException
+     * @throws ConnectionException
+     */
+    protected function getGuild(World $world, ?string $name): ?Guild
     {
         if (! is_string($name)) {
             return null;
         }
 
         $guild = Guild::whereName($name)
-            ->firstOrFail();
+            ->first(['id', 'name']);
 
-        return $guild->id;
+        if (! $guild instanceof Guild) {
+            $guilds = $this->importGuildsFromWorld($world);
+            $guild = $guilds->firstWhere('name', $name);
+        }
+
+        return $guild;
     }
 }
