@@ -2,27 +2,36 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Infolists\Components\GuildEntry;
+use App\Filament\Infolists\Components\GuildRankEntry;
 use App\Filament\Resources\CharacterResource\Pages;
 use App\Filament\Resources\CharacterResource\RelationManagers;
+use App\Filament\Tables\Actions\ExevoPanBazaarLinkAction;
+use App\Filament\Tables\Actions\GuildStatsLinkAction;
+use App\Filament\Tables\Actions\TibiaLinkAction;
+use App\Filament\Tables\Actions\UpdateCharacterAction;
+use App\Filament\Tables\Actions\UpdateCharactersBulkAction;
+use App\Filament\Tables\Columns\BetterTextColumn;
+use App\Filament\Tables\Columns\GuildColumn;
+use App\Filament\Tables\Columns\GuildRankColumn;
 use App\Models\Character;
 use App\Models\Guild;
-use App\Providers\AppServiceProvider;
-use App\Support\Enums\Rank;
+use App\Models\Member;
 use App\Support\Enums\Vocation;
-use App\Tibia\TibiaService;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Support\Collection;
 
 class CharacterResource extends Resource
 {
     protected static ?string $model = Character::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-users';
+
+    protected static ?int $navigationSort = 2;
 
     public static function infolist(Infolist $infolist): Infolist
     {
@@ -42,36 +51,9 @@ class CharacterResource extends Resource
                     ->columns()
                     ->visible(static fn (Character $record) => $record->guild instanceof Guild)
                     ->schema([
-                        TextEntry::make('guild.name')
-                            ->label('Name')
-                            ->icons([
-                                'heroicon-s-star' => static fn (?string $state) => $state === AppServiceProvider::MAIN_GUILD,
-                            ])
-                            ->iconColor('primary')
-                            ->url(
-                                static function (Character $record): ?string {
-                                    if (! $record->guild instanceof Guild) {
-                                        return null;
-                                    }
-
-                                    return route(
-                                        'filament.admin.resources.guilds.view',
-                                        ['record' => $record->guild]
-                                    );
-                                },
-                            )
-                            ->placeholder('-'),
-                        TextEntry::make('guild_rank')
-                            ->label('Rank')
-                            ->iconColor(static fn (?Rank $state) => $state->getColor())
-                            ->getStateUsing(static function (Character $record): null|string|Rank {
-                                if ($record->guild?->name !== AppServiceProvider::MAIN_GUILD) {
-                                    return $record->guild_rank;
-                                }
-
-                                return Rank::tryFrom($record->guild_rank);
-                            })
-                            ->placeholder('-'),
+                        GuildEntry::make('guild.name')
+                            ->label('Name'),
+                        GuildRankEntry::make('guild_rank'),
                     ]),
             ]);
     }
@@ -90,38 +72,16 @@ class CharacterResource extends Resource
                 Tables\Columns\TextColumn::make('vocation')
                     ->label('Voc')
                     ->formatStateUsing(static fn (Vocation $state) => $state->getShortValue()),
-                Tables\Columns\TextColumn::make('guild.name')
-                    ->icons([
-                        'heroicon-s-star' => static fn (?string $state) => $state === AppServiceProvider::MAIN_GUILD,
-                    ])
-                    ->iconColor('primary')
-                    ->url(
-                        static function (Character $record): ?string {
-                            if (! $record->guild instanceof Guild) {
-                                return null;
-                            }
-
-                            return route(
-                                'filament.admin.resources.guilds.view',
-                                ['record' => $record->guild]
-                            );
-                        },
-                    )
-                    ->placeholder('-')
+                BetterTextColumn::make('member.fullName')
+                    ->viewLink(static fn (Character $record): ?Member => $record->member),
+                GuildColumn::make('guild.name')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('guild_rank')
-                    ->label('Rank')
-                    ->getStateUsing(static function (Character $record): null|string|Rank {
-                        if ($record->guild?->name !== AppServiceProvider::MAIN_GUILD) {
-                            return $record->guild_rank;
-                        }
-
-                        return Rank::tryFrom($record->guild_rank);
-                    })
+                GuildRankColumn::make('guild_rank')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Last Updated')
-                    ->since(),
+                    ->since()
+                    ->dateTimeTooltip(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('guild.name')
@@ -129,56 +89,15 @@ class CharacterResource extends Resource
                     ->preload(),
             ])
             ->actions([
-                Tables\Actions\Action::make('update')
-                    ->successNotificationTitle(
-                        static fn (Character $record) => "Character {$record->name} updated!"
-                    )
-                    ->action(function (Character $record, TibiaService $tibiaService): void {
-                        $tibiaService->importCharacter($record->name);
-                    })
-                    ->after(function (Tables\Actions\Action $action): void {
-                        $action->sendSuccessNotification();
-                    }),
+                UpdateCharacterAction::make('update'),
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('tibia')
-                        ->icon('heroicon-s-arrow-top-right-on-square')
-                        ->url(
-                            static fn (Character $record) => 'https://www.tibia.com/community/?subtopic=characters&name='.urlencode($record->name),
-                            true
-                        ),
-                    Tables\Actions\Action::make('guildstats')
-                        ->label('GuildStats')
-                        ->icon('heroicon-s-arrow-top-right-on-square')
-                        ->url(
-                            static fn (Character $record) => 'https://guildstats.eu/character?nick='.urlencode($record->name),
-                            true
-                        ),
-                    Tables\Actions\Action::make('bazaar-history')
-                        ->icon('heroicon-s-arrow-top-right-on-square')
-                        ->url(
-                            static fn (Character $record) => 'https://www.exevopan.com/?mode=history&descending=true&nicknameFilter='.urlencode($record->name),
-                            true
-                        ),
+                    TibiaLinkAction::make('tibia'),
+                    GuildStatsLinkAction::make('guildstats'),
+                    ExevoPanBazaarLinkAction::make('bazaar-history'),
                 ]),
             ])
             ->bulkActions([
-                Tables\Actions\BulkAction::make('update')
-                    ->requiresConfirmation(
-                        static fn (Collection $records) => $records->count() > 5
-                    )
-                    ->successNotificationTitle(
-                        static fn (Collection $records) => "{$records->count()} characters updated!"
-                    )
-                    ->action(
-                        /** @param Collection<Character> $records */
-                        function (Collection $records, TibiaService $tibiaService): void {
-                            foreach ($records as $record) {
-                                $tibiaService->importCharacter($record->name);
-                            }
-                        })
-                    ->after(function (Tables\Actions\BulkAction $action): void {
-                        $action->sendSuccessNotification();
-                    }),
+                UpdateCharactersBulkAction::make('update'),
             ]);
     }
 

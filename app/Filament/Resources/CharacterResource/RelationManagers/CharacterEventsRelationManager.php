@@ -20,7 +20,8 @@ class CharacterEventsRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('happened_at')
                     ->label('Happened At')
-                    ->since(),
+                    ->since()
+                    ->dateTimeTooltip(),
                 Tables\Columns\TextColumn::make('type'),
                 Tables\Columns\TextColumn::make('old_value')
                     ->label('Old Value'),

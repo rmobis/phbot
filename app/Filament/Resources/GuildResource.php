@@ -3,8 +3,9 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\GuildResource\Pages;
+use App\Filament\Tables\Columns\BetterTextColumn;
 use App\Models\Guild;
-use Filament\Forms\Form;
+use App\Providers\AppServiceProvider;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -13,24 +14,23 @@ class GuildResource extends Resource
 {
     protected static ?string $model = Guild::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'rpg-round-shield';
 
-    public static function form(Form $form): Form
-    {
-        return $form
-            ->schema([
-                //
-            ]);
-    }
+    protected static ?int $navigationSort = 3;
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                BetterTextColumn::make('name')
+                    ->isMain(static fn (?string $state) => $state === AppServiceProvider::MAIN_GUILD)
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('world.name')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('characters_count')
+                    ->label('Characters')
                     ->counts('characters'),
             ])
             ->filters([

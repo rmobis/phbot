@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -27,6 +28,16 @@ class Character extends Model
     public function guild(): BelongsTo
     {
         return $this->belongsTo(Guild::class);
+    }
+
+    public function main_member(): HasOne
+    {
+        return $this->hasOne(Member::class, 'main_character_id');
+    }
+
+    public function member(): BelongsTo
+    {
+        return $this->belongsTo(Member::class);
     }
 
     public function characterEvents(): HasMany

@@ -19,6 +19,7 @@ class ViewCharacter extends ViewRecord
                 ->successNotificationTitle('Character updated!')
                 ->action(function (Character $record, TibiaService $tibiaService): void {
                     $tibiaService->importCharacter($record->name);
+                    $this->redirect($record->id);
                 })
                 ->after(function (Character $record, Actions\Action $action): void {
                     $action->sendSuccessNotification();
