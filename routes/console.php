@@ -3,10 +3,14 @@
 use App\Tibia\Crawler;
 use Illuminate\Support\Facades\Artisan;
 
-Artisan::command('app:test', function (Crawler $crawler) {
-    $crawler->login('r.mo.b.is@gmail.com', 'jpq0VTD*tzn-zhz!jgv');
+Schedule::command('app:import-characters Exalted')
+    ->hourlyAt(05);
 
-    $fkers = ['Pudoka Pewpewpew', 'Rhadow', 'Sorc kann', 'Don Arte', 'Felktoxico', 'Homiizao', 'Junin semaxe', 'Lilly san', 'Paliteiro Etebra', 'Real Edaddy', 'Lex One'];
+Schedule::command('app:update-stale-characters')
+    ->everyFiveMinutes();
+
+Artisan::command('app:test', function (Crawler $crawler) {
+    $fkers = [''];
     foreach ($fkers as $fker) {
         $crawler->excludeCharacter('Exalted', $fker);
     }

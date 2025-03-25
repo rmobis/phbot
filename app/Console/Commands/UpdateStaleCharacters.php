@@ -28,7 +28,9 @@ class UpdateStaleCharacters extends Command
         $staleDate = Carbon::now()->subSeconds($seconds);
 
         $this->info('Fetching characters for update...');
-        $characters = Character::where('updated_at', '<', $staleDate)->get();
+        $characters = Character::where('updated_at', '<', $staleDate)
+            ->limit(30)
+            ->get();
 
         if ($characters->isEmpty()) {
             $this->warn('No characters found for update.');
