@@ -83,7 +83,7 @@ class TibiaService
         $apiMembers = $response->guild->members;
 
         return $apiMembers->map(
-            static fn (MemberData $apiMember) => $this->importCharacter($apiMember->name)
+            fn (MemberData $apiMember) => $this->importCharacter($apiMember->name)
         );
     }
 
