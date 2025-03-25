@@ -21,8 +21,8 @@ return new class extends Migration
             $table->integer('balance');
 
             $table->enum('type', CoinHistoryEntryType::values());
-            $table->foreignId('origin_character_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('destination_character_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('origin_character_id')->nullable()->constrained('characters')->nullOnDelete();
+            $table->foreignId('destination_character_id')->nullable()->constrained('characters')->nullOnDelete();
 
             $table->timestamps();
         });
