@@ -49,6 +49,6 @@ class Character extends Model
     {
         $names = collect($names)->map(static fn (string $name): string => Str::upper($name));
 
-        $query->whereIn(DB::raw('UPPER(`name`)'), $names);
+        $query->whereIn(DB::raw('UPPER(name)'), $names);
     }
 }
