@@ -13,14 +13,18 @@ enum Rank: string implements HasColor, HasIcon
     use ArrayableEnum;
 
     case Leader = 'Leader';
-    case Legend = 'Legend';
+    case ViceLeader = 'Vice Leader';
     case Hero = 'Hero';
-    case Guardian = 'Guardian';
-    case Conqueror = 'Conqueror';
-    case Traveler = 'Traveler';
-    case New = 'New';
-    case Second = 'Second';
-    case Retired = 'Retired';
+    case Major = 'Major';
+    case Prodigy = 'Prodigy';
+    case Rising = 'Rising';
+
+    case Member = 'Member';
+    case Recruta = 'Recruta';
+    case MembroNovo = 'Membro Novo';
+    case Reserva = 'Reserva';
+    case Academy = 'Academy';
+    case SemRank = 'Sem Rank';
 
     /**
      * @return array<string, array{50: string, 100: string, 200: string, 300: string, 400: string, 500: string, 600: string, 700: string, 800: string, 900: string, 950: string}>
@@ -29,14 +33,18 @@ enum Rank: string implements HasColor, HasIcon
     {
         return [
             'skull-leader' => Color::Red,
-            'skull-legend' => Color::hex('#ffffff'),
+            'skull-vice-leader' => Color::hex('#ffffff'),
             'skull-hero' => Color::Yellow,
-            'skull-guardian' => Color::Purple,
-            'skull-conqueror' => Color::Cyan,
-            'skull-traveler' => Color::Orange,
-            'skull-new' => Color::Pink,
-            'skull-second' => Color::Neutral,
-            'skull-retired' => Color::Neutral,
+            'skull-major' => Color::Purple,
+            'skull-prodigy' => Color::Purple,
+            'skull-rising' => Color::Purple,
+
+            'skull-member' => Color::Cyan,
+            'skull-recruta' => Color::Orange,
+            'skull-membro-novo' => Color::Pink,
+            'skull-reserva' => Color::Neutral,
+            'skull-academy' => Color::Neutral,
+            'skull-sem-rank' => Color::Neutral,
         ];
     }
 
@@ -47,6 +55,6 @@ enum Rank: string implements HasColor, HasIcon
 
     public function getColor(): string
     {
-        return 'skull-'.Str::lower($this->value);
+        return 'skull-'.Str::kebab($this->value);
     }
 }
