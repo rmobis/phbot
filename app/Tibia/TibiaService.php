@@ -8,7 +8,6 @@ use App\Models\World;
 use App\Support\Enums\Region;
 use App\Support\Enums\Vocation;
 use App\Support\Enums\WorldType;
-use App\Tibia\Data\Guild\MemberData;
 use App\Tibia\Data\Guilds\GuildData;
 use App\Tibia\Data\Worlds\WorldData;
 use App\Tibia\TibiaDataApi\Resources\CharacterResource;
@@ -77,13 +76,19 @@ class TibiaService
      * @throws RequestException
      * @throws ConnectionException
      */
-    public function importCharactersFromGuild(Guild $guild): Collection
+    public function importCharactersFromGuild(Guild $guild, bool $onlyNew = false): Collection
     {
         $response = $this->guildResource->get($guild->name);
         $apiMembers = $response->guild->members;
 
-        return $apiMembers->map(
-            fn (MemberData $apiMember) => $this->importCharacter($apiMember->name)
+        $memberNames = $apiMembers->pluck('name');
+        if ($onlyNew) {
+            $existingMemberNames = Character::whereIn('name', $memberNames)->pluck('name');
+            $memberNames = $memberNames->diff($existingMemberNames);
+        }
+
+        return $memberNames->map(
+            fn (string $apiMember) => $this->importCharacter($apiMember)
         );
     }
 

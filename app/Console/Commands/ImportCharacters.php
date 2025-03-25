@@ -29,6 +29,6 @@ class ImportCharacters extends Command
         $guild = Guild::where('name', $guildName)->firstOrFail();
 
         $this->info("Importing characters from guild {$guild->name}...");
-        $tibiaService->importCharactersFromGuild($guild);
+        $tibiaService->importCharactersFromGuild($guild, true);
     }
 }
