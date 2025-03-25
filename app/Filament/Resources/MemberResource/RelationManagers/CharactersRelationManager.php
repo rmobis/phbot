@@ -83,8 +83,9 @@ class CharactersRelationManager extends RelationManager
             ->defaultSort(static function (Builder $query) {
                 // force main character to be the first
                 return $query->orderBy(
-                    DB::raw('(SELECT `id` FROM `members` WHERE `main_character_id` = `characters`.`id` LIMIT 1)'),
-                    'DESC'
+                    Member::select('name')
+                        ->where('main_character_id', DB::raw('"characters"."id"'))
+                        ->limit(1)
                 );
             });
     }
