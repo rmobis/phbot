@@ -11,14 +11,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('characters', function (Blueprint $table) {
-            $table->foreignId('member_id')
-                ->nullable()
-                ->after('guild_rank')
-                ->constrained()
-                ->nullOnDelete();
-        });
-
         Schema::create('members', function (Blueprint $table) {
             $table->id();
             $table->string('first_name');
@@ -28,6 +20,14 @@ return new class extends Migration
                 ->nullable()
                 ->constrained('characters');
             $table->timestamps();
+        });
+
+        Schema::table('characters', function (Blueprint $table) {
+            $table->foreignId('member_id')
+                ->nullable()
+                ->after('guild_rank')
+                ->constrained()
+                ->nullOnDelete();
         });
     }
 
